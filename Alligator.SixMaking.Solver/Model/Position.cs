@@ -68,14 +68,9 @@ namespace Alligator.SixMaking.Model
             get { return winner != Disk.None; } // nem jó
         }
 
-        public object Clone()
+        public IList<Ply> History
         {
-            var state = new Position();
-            foreach (var ply in history)
-            {
-                state.Do(ply);
-            }
-            return state;
+            get { return history; }
         }
 
         public void Do(Ply ply)
