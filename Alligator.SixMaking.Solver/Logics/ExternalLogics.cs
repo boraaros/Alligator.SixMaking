@@ -14,25 +14,17 @@ namespace Alligator.SixMaking.Logics
 
         public ExternalLogics(IPliesPool pliesPool, IMoveRules moveRules, Disk own)
         {
-            if (pliesPool == null)
-            {
-                throw new ArgumentNullException("pliesPool");
-            }
-            if (moveRules == null)
-            {
-                throw new ArgumentNullException("moveRules");
-            }
-            this.pliesPool = pliesPool;
-            this.moveRules = moveRules;
+            this.pliesPool = pliesPool ?? throw new ArgumentNullException(nameof(pliesPool));
+            this.moveRules = moveRules ?? throw new ArgumentNullException(nameof(moveRules));
             this.own = own;
         }
 
-        private int[] FigureFactor = new int[]
+        private readonly int[] FigureFactor = new int[]
         {
             50, 100, 250, 500, 1000
         };
 
-        private int CoverFactor = 3;
+        private readonly int CoverFactor = 3;
 
         private static int[] PawnPositionFactor = new int[]
         {
@@ -88,8 +80,8 @@ namespace Alligator.SixMaking.Logics
             QueenPositionFactor
         };
 
-        private int AttackFactor = 1;
-        private int DefenseFactor = 1;
+        private readonly int AttackFactor = 1;
+        private readonly int DefenseFactor = 1;
 
         public IEnumerable<Ply> GetStrategiesFrom(IPosition position)
         {

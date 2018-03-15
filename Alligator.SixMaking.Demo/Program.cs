@@ -107,8 +107,6 @@ namespace Alligator.SixMaking.Demo
 
         private static Ply AiStep(IList<Ply> history, ISolver<Ply> solver)
         {
-            Position position = new Position(history);
-
             IList<Ply> forecast;
             int evaluationValue = solver.Maximize(history, out forecast);
 
@@ -118,7 +116,7 @@ namespace Alligator.SixMaking.Demo
             }
 
             Console.ForegroundColor = ConsoleColor.Gray;
-            Console.WriteLine("AI thinking...");
+            Console.WriteLine("AI is thinking...");
             Console.WriteLine(string.Format("Evaluation value: {0} ({1})", evaluationValue, ToString(evaluationValue)));
             Console.WriteLine(string.Format("Optimal next step: {0}", forecast[0]));
             Console.WriteLine(string.Format("Forecast: {0}", string.Join(" ## ", forecast)));
@@ -130,12 +128,6 @@ namespace Alligator.SixMaking.Demo
         private static string ToString(int evaluationValue)
         {
             return evaluationValue.ToString();
-
-            if (evaluationValue == 0)
-            {
-                return "Hm, draw..";
-            }
-            return evaluationValue > 0 ? "Ho-Ho-Ho!!!" : "Oh, no!";
         }
 
         private static void PrintPosition(IPosition position)
@@ -162,7 +154,7 @@ namespace Alligator.SixMaking.Demo
                                 Console.Write(string.Format(" {0}", "|"));
                                 break;
                             default:
-                                throw new ArgumentOutOfRangeException();
+                                throw new ArgumentOutOfRangeException($"Unknown disk type: {position.DiskAt(Constants.BoardSize * i + j, k)}");
                         }
                         Console.ForegroundColor = ConsoleColor.White;
                     }
