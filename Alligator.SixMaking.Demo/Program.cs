@@ -3,6 +3,8 @@ using Alligator.SixMaking.Model;
 using Alligator.Solver;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+
 namespace Alligator.SixMaking.Demo
 {
     class Program
@@ -12,17 +14,17 @@ namespace Alligator.SixMaking.Demo
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("Hello tic-tac-toe demo!");
 
-            IExternalLogics<IPosition, Ply> externalLogics = new ExternalLogics(PliesPool.Instance, new MoveRules(), Disk.Red);
+            IRules<IPosition, Ply> rules = new Rules(PliesPool.Instance, new MoveRules(), Disk.Red);
             ISolverConfiguration solverConfiguration = new SolverConfiguration();
 
-            SolverFactory<IPosition, Ply> solverFactory = new SolverFactory<IPosition, Ply>(externalLogics, solverConfiguration, SolverLog);
+            SolverFactory<IPosition, Ply> solverFactory = new SolverFactory<IPosition, Ply>(rules, solverConfiguration, SolverLog);
             ISolver<Ply> solver = solverFactory.Create();
 
             IPosition position = new Position();
             IList<Ply> history = new List<Ply>();
             bool aiStep = true;
 
-            while (!position.IsEnded)
+            while (rules.LegalMovesAt(position).Any())
             {
                 PrintPosition(position);
                 Ply next;
@@ -35,7 +37,7 @@ namespace Alligator.SixMaking.Demo
                         try
                         {
                             next = AiStep(history, solver);
-                            copy.Do(next);
+                            copy.Take(next);
                             break;
                         }
                         catch (Exception e)
@@ -51,7 +53,7 @@ namespace Alligator.SixMaking.Demo
                         try
                         {
                             next = HumanStep();
-                            copy.Do(next);
+                            copy.Take(next);
                             break;
                         }
                         catch (Exception e)
@@ -60,11 +62,11 @@ namespace Alligator.SixMaking.Demo
                         }
                     }
                 }
-                position.Do(next);
+                position.Take(next);
                 history.Add(next);
                 aiStep = !aiStep;
             }
-            if (!position.HasWinner)
+            if (!rules.IsGoal(position))
             {
                 Console.WriteLine("Game over, DRAW!");
             }
@@ -107,22 +109,16 @@ namespace Alligator.SixMaking.Demo
 
         private static Ply AiStep(IList<Ply> history, ISolver<Ply> solver)
         {
-            IList<Ply> forecast;
-            int evaluationValue = solver.Maximize(history, out forecast);
-
-            if (forecast == null || forecast.Count == 0)
-            {
-                throw new InvalidOperationException("Solver error!");
-            }
+            var next = solver.OptimizeNextMove(history);
 
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine("AI is thinking...");
-            Console.WriteLine(string.Format("Evaluation value: {0} ({1})", evaluationValue, ToString(evaluationValue)));
-            Console.WriteLine(string.Format("Optimal next step: {0}", forecast[0]));
-            Console.WriteLine(string.Format("Forecast: {0}", string.Join(" ## ", forecast)));
+            //Console.WriteLine(string.Format("Evaluation value: {0} ({1})", evaluationValue, ToString(evaluationValue)));
+            Console.WriteLine(string.Format("Optimal next step: {0}", next));
+            //Console.WriteLine(string.Format("Forecast: {0}", string.Join(" ## ", forecast)));
             Console.ForegroundColor = ConsoleColor.White;
 
-            return forecast[0];
+            return next;
         }
 
         private static string ToString(int evaluationValue)
