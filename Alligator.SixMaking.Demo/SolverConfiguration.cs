@@ -7,18 +7,6 @@ namespace Alligator.SixMaking.Demo
     {
         public TimeSpan TimeLimitPerMove => TimeSpan.FromSeconds(3);
 
-        public int SearchDepthLimit => 20;
-
-        public int QuiescenceExtensionLimit => 0;
-
-        public int EvaluationTableSizeExponent => 16;
-
-        public int EvaluationTableRetryLimit => 0;
-
-        public int TranspositionTableSizeExponent => 24;
-
-        public int TranspositionTableRetryLimit => 1;
-
-        public int MinimumSearchDepthToUseMtdf => 99;
+        public int MaxDegreeOfParallelism => 1;     
     }
 }

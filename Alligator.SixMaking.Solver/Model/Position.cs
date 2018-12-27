@@ -29,7 +29,7 @@ namespace Alligator.SixMaking.Model
         {
             foreach (Ply ply in history)
             {
-                Do(ply);
+                Take(ply);
             }
         }
 
@@ -73,7 +73,7 @@ namespace Alligator.SixMaking.Model
             get { return history; }
         }
 
-        public void Do(Ply ply)
+        public void Take(Ply ply)
         {
             if (winner != Disk.None)
             {
@@ -93,7 +93,7 @@ namespace Alligator.SixMaking.Model
             ChangeNext();
         }
 
-        public void Undo()
+        public void TakeBack()
         {
             if (history.Count == 0)
             {
@@ -161,6 +161,104 @@ namespace Alligator.SixMaking.Model
         public bool HasWinner
         {
             get { return winner != Disk.None; }
+        }
+
+        public int Value => StaticEvaluate();
+
+        private readonly int[] FigureFactor = new int[]
+        {
+            50, 100, 250, 500, 1000
+        };
+
+        private readonly int CoverFactor = 3;
+
+        private static int[] PawnPositionFactor = new int[]
+        {
+            2, 3, 3, 3, 2,
+            3, 4, 4, 4, 3,
+            3, 4, 4, 4, 3,
+            3, 4, 4, 4, 3,
+            2, 3, 3, 3, 2
+        };
+
+        private static int[] RookPositionFactor = new int[]
+        {
+            8, 8, 8, 8, 8,
+            8, 8, 8, 8, 8,
+            8, 8, 8, 8, 8,
+            8, 8, 8, 8, 8,
+            8, 8, 8, 8, 8
+        };
+
+        private static int[] KnightPositionFactor = new int[]
+        {
+            2, 3, 4, 3, 2,
+            3, 4, 6, 4, 3,
+            4, 6, 8, 6, 4,
+            3, 4, 6, 4, 3,
+            2, 3, 4, 3, 2
+        };
+
+        private static int[] BishopPositionFactor = new int[]
+        {
+            4, 4, 4, 4, 4,
+            4, 6, 6, 6, 4,
+            4, 6, 8, 6, 4,
+            4, 6, 6, 6, 4,
+            4, 4, 4, 4, 4
+        };
+
+        private static int[] QueenPositionFactor = new int[]
+        {
+            12, 12, 12, 12, 12,
+            12, 14, 14, 14, 12,
+            12, 14, 16, 14, 12,
+            12, 14, 14, 14, 12,
+            12, 12, 12, 12, 12
+        };
+
+        private static int[][] PositionsFactor = new int[][]
+        {
+            PawnPositionFactor,
+            RookPositionFactor,
+            KnightPositionFactor,
+            BishopPositionFactor,
+            QueenPositionFactor
+        };
+
+        private readonly int AttackFactor = 1;
+        private readonly int DefenseFactor = 1;
+
+        public int StaticEvaluate()
+        {
+            var covers = new int[25];
+
+            var utility = 0;
+
+            var own = history.Count % 2 == 0 ? Disk.Red : Disk.Red;
+
+            for (int i = 0; i < 25; i++)
+            {
+                var h = ColumnHeightAt(i);
+
+                if (h > 0)
+                {
+                    utility += FigureFactor[h - 1] * PositionsFactor[h - 1][i] * covers[i];
+                }
+
+                for (int k = 0; k < h; k++)
+                {
+                    if (own == DiskAt(i, k))
+                    {
+                        utility += (FigureFactor[k] * PositionsFactor[k][i] * AttackFactor * (k == h - 1 ? CoverFactor : 1));
+                    }
+                    else
+                    {
+                        utility -= (FigureFactor[k] * PositionsFactor[k][i] * DefenseFactor * (k == h - 1 ? CoverFactor : 1));
+                    }
+                }
+            }
+            return utility;
         }
     }
 }
